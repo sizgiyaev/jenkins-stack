@@ -1,0 +1,37 @@
+---
+version: '3'
+
+services:
+    jenkins-master:
+        image: sizgiyaev/jenkins
+        ports:
+            - 50000:50000
+        volumes:
+            - jenkins-master-home:/var/jenkins_home
+            - jenkins-master-logs:/var/log/jenkins
+        env_file:
+            - common.env
+            - jenkins-master.env
+    
+    jenkins-reverse-proxy:
+        image: sizgiyaev/jenkins-rpx
+        depends_on:
+            - jenkins-master
+        ports:
+            - 80:80
+            - 443:443
+        volumes:
+            - jenkins-reverse-proxy-acme:/root/.acme.sh
+            - jenkins-reverse-proxy-ssl:/etc/nginx/ssl
+        env_file:
+            - common.env
+            - jenkins-rpx.env
+        entrypoint:
+            - entrypoint.sh
+            - "-ssl"
+
+volumes:
+    jenkins-master-home:
+    jenkins-master-logs:
+    jenkins-reverse-proxy-acme:
+    jenkins-reverse-proxy-ssl:
